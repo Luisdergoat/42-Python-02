@@ -28,35 +28,40 @@ class Garden:
             current = current.next
 
 
-def check_plant_health(plant_name, water_level, sunlight_hours):
+def check_plant_health(plant_name, water_lvl, sun_hours):
     Plot = Garden()
-    if plant_name == "":
-        raise ValueError(" Error: plant name can't be empty")
-    if water_level < 2 and water_level > 10:
-        raise ValueError(f"Error: Water level {water_level} is not healthy")
-    if sunlight_hours < 2 and sunlight_hours > 12:
-        raise ValueError(f"Error: Sunlight hours {sunlight_hours} is not "
-                         f"healthy")
-    if plant_name is not None and plant_name != "":
-        print("✅ Plant name is valid")
-        if water_level > 2 and water_level < 10:
-            print("✅ Waterlevel is healty")
-            if sunlight_hours > 2 and sunlight_hours < 12:
-                print("✅ Sunlight hours are Healty")
-                print(f"✅ Plant {plant_name} is healty")
-                Plot.add_plant_to_list(plant_name, water_level, sunlight_hours)
-                Plot.garden_info()
-            else:
-                print("❌ Error: Sunlight hours are not healthy")
-                print("Healty hours of sunlight is missing for a healty plant")
+    try:
+        if plant_name == "":
+            raise ValueError(" Error: plant name can't be empty")
+        if water_lvl < 2 and water_lvl > 10:
+            raise ValueError(f"Error: Water level {water_lvl} is not healthy")
+        if sun_hours < 2 and sun_hours > 12:
+            raise ValueError(f"Error: Sunlight hours {sun_hours} is not "
+                             f"healthy")
+    except ValueError as ve:
+        print(ve)
+        return
+    finally:
+        if plant_name is not None and plant_name != "":
+            print("✅ Plant name is valid")
+            if water_lvl > 2 and water_lvl < 10:
+                print("✅ Waterlevel is healty")
+                if sun_hours > 2 and sun_hours < 12:
+                    print("✅ Sunlight hours are Healty")
+                    print(f"✅ Plant {plant_name} is healty")
+                    Plot.add_plant_to_list(plant_name, water_lvl, sun_hours)
+                    Plot.garden_info()
+                else:
+                    print("❌ Error: Sunlight hours are not healthy")
+                    print("Healty hours of sun is missing for a healty plant")
 
-        else:
-            print("❌ Water level is not healty")
-            if sunlight_hours > 2 and sunlight_hours < 12:
+            else:
+                print("❌ Water level is not healty")
+            if sun_hours > 2 and sun_hours < 12:
                 print("✅ Sunlight hours are Healty")
                 print("Healty water level is missing for a healty plant")
-    else:
-        print("❌ Error: Plantname is not valid")
+        else:
+            print("❌ Error: Plantname is not valid")
 
 
 def test_plant_checks():
