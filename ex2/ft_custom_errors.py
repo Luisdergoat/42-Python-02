@@ -4,16 +4,7 @@ class GardenError:
 
 
 class WateringError(GardenError):
-    def __init__(self, name):
-        super().__init__(name)
-
-    def testing_Water_level(self, Water_level):
-        if Water_level > 20:
-            print(f"The plant does not need {Water_level}L of Water")
-        elif Water_level < 8:
-            print(f"The plant needs more than {Water_level}L of Water")
-        else:
-            print("Good amount of Water!")
+    pass
 
 
 class PlantError(GardenError):
@@ -56,7 +47,7 @@ def test_errors():
                 water = int(water_level)
                 break
             except ValueError:
-                print("Please enter a valid number for water level.")
+                raise WateringError("Invalid water level input")
 
         Plant = WateringError(test_plant)
         Plant.testing_Water_level(water)
