@@ -1,283 +1,245 @@
+"""
+Garden Management System - Complete Error Handling Integration.
+
+Demonstrates:
+- Custom exception classes
+- Try/except/finally blocks
+- Input validation and error raising
+- Error recovery and continuation
+- Resource cleanup
+- Integration of all error handling techniques
+"""
+
+# ============================================
+# CUSTOM EXCEPTION CLASSES
+# ============================================
+
+
 class GardenError(Exception):
-    pass
+    """Base exception for all garden-related errors."""
 
-
-class EmptyNameError(GardenError):
-    def __init__(self, message="Error: Plant name cannot be empty"):
+    def __init__(self, message):
+        """Initialize GardenError with a message."""
         self.message = message
+        super().__init__(self.message)
+
+
+class PlantError(GardenError):
+    """Exception for plant-related problems."""
+
+    def __init__(self, message):
+        """Initialize PlantError with a message."""
         super().__init__(message)
 
 
-class PlantNotFoundError(GardenError):
-    pass
+class WaterError(GardenError):
+    """Exception for watering-related problems."""
+
+    def __init__(self, message):
+        """Initialize WaterError with a message."""
+        super().__init__(message)
 
 
-class InvalidWaterAmountError(GardenError):
-    pass
-
-
-class GardenFullError(GardenError):
-    pass
-
-
-class DeadPlantError(GardenError):
-    pass
-
-
-class DuplicatePlantError(GardenError):
-    pass
-
-
-class Node:
-    def __init__(self, plant_name, water_requ):
-        self.plant_name = plant_name
-        self.water_requirements = water_requ
-        self.Plant_status = "healthy"
-        self.list_size = 0
-        self.water_level = 5
-        self.plant_alive = True
-        self.next = None
-
-
-# ======================= Garden Manager Class =========================
+# ============================================
+# GARDEN MANAGER CLASS
+# ============================================
 
 
 class GardenManager:
-    """Manages a collection of plants in the garden."""
+    """Manage garden plants with comprehensive error handling."""
 
-    def __init__(self, max_plants=10):
-        self.plant_list_head = None
-        self.plant_list_size = 0
-        self.max_plants = max_plants
-        self.operation_log = []  # Log of operations for debugging
-        self.water_usage = 0
+    def __init__(self):
+        """Initialize the garden manager."""
+        self.plants = {}
+        self.water_tank_level = 100
 
-    def log_operation(self, operation):
-        self.operation_log.append(operation)
+    def add_plant(self, plant_name, water_level=5, sunlight_hours=8):
+        """
+        Add a plant to the garden.
 
-    def add_plant_to_list(self, name, water_requ=3):
-        """Adds a new plant to the garden."""
-        new_node = Node(name, water_requ)
+        Args:
+            plant_name:  Name of the plant
+            water_level:   Required water level (1-10)
+            sunlight_hours:   Required sunlight hours (2-12)
+
+        Raises:
+            PlantError:  If plant data is invalid
+        """
+        # Validate plant name
+        if not plant_name or plant_name.strip() == "":
+            raise PlantError("Plant name cannot be empty!")
+
+        # Validate water level
+        if water_level < 1 or water_level > 10:
+            raise PlantError(f"Water level {water_level} out of range (1-10)")
+
+        # Validate sunlight hours
+        if sunlight_hours < 2 or sunlight_hours > 12:
+            raise PlantError(f"Sunlight hours {sunlight_hours} out "
+                             f"of range (2-12)")
+
+        # Add plant to garden
+        self.plants[plant_name] = {
+            "water_level": water_level,
+            "sunlight_hours": sunlight_hours,
+            "healthy": True,
+        }
+
+    def water_plants(self):
+        """
+        Water all plants with proper resource cleanup.
+
+        Raises:
+            WaterError: If water tank is empty
+        """
+        print("Opening watering system")
+
         try:
-            if not name or name == "":
-                raise EmptyNameError()
-            if self.plant_list_head is None:
-                self.plant_list_head = new_node
-                self.plant_list_head.list_size += 1
-                return
-            current = self.plant_list_head
-            while current is not None:
-                if current.plant_name == name:
-                    raise DuplicatePlantError()
-                current = current.next
-            if self.plant_list_size >= self.max_plants:
-                raise GardenFullError()
-            if self.plant_list_head is None:
-                self.plant_list_head = new_node
-                return
-            current = self.plant_list_head
-            while current.next is not None:
-                current = current.next
-            current.next = new_node
-            current.list_size += 1
-            print(f"✅ Plant '{name}' added to the garden.")
-            self.log_operation(f"✅ Plant '{name}' added to the garden.")
+            # Check water tank
+            if self.water_tank_level < 10:
+                raise WaterError("Not enough water in tank")
 
-        except (EmptyNameError, DuplicatePlantError, GardenFullError) as e:
-            self.log_operation(f"❌ Error trying to add plant: {e}")
-            raise  # Re-raise
-        except Exception as e:
-            self.log_operation(f"❌ Error unknown {e}")
-            raise GardenError(f"❌ Unknowen Error type: {e}")
+            # Water each plant
+            for plant_name in self.plants:
+                print(f"Watering {plant_name} - success")
+                self.water_tank_level -= 5
 
-    def water_plant(self, amount=3):
-        """waters all plants in the garden"""
-        try:
-            print(f"💧 All plants were watered with {amount}L of water!")
-            if amount < 1:
-                raise InvalidWaterAmountError()
-            current = self.plant_list_head
-            while current is not None:
-                if current.plant_alive is False:
-                    print(f"💀 Plant '{current.plant_name}' is dead and "
-                          f"cannot be watered.")
-                current.water_level += amount
-                if current.water_level > current.water_requirements * 2:
-                    current.plant_alive = False
-                    print(f"💀 Plant '{current.plant_name}' has drowned "
-                          f"due to overwatering!")
-                current = current.next
-            self.log_operation(f"💧 All plants were watered with {amount}L "
-                               f"of water")
-
-        except (InvalidWaterAmountError, DeadPlantError) as e:
-            self.log_operation(f"❌ Error watering: {e}")
-            raise
-        except Exception as e:
-            self.log_operation(f"❌ Unknowen Error: {e}")
-            raise GardenError(f"Unknown Error while watering: {e}")
         finally:
-            # CLEANUP
-            print("🔒 watering finished")
+            # Always cleanup, even if error occurred
+            print("Closing watering system (cleanup)")
 
-    def check_plant_health(self, name):
-        try:
-            if not isinstance(name, str):
-                raise TypeError("Plantname must be a string!")
-            current = self.plant_list_head
-            checker = 0
-            while current is not None:
-                if current.plant_name == name:
-                    checker = 1
-                current = current.next
-            if checker == 0:
-                raise PlantNotFoundError(f"Plant {name} is not found in "
-                                         f"the Garden")
-            plant = self.plants[name]
-            health = plant.check_health()
-            print(f"Healthcheck of '{name}': {health}")
-            print(f" Waterlevel: {plant.water_level:.1f}")
-        except (PlantNotFoundError, TypeError)as e:
-            self.log_operation(f"Health check failed: {e}")
-            raise
+    def check_plant_health(self, plant_name):
+        """
+        Check health of a specific plant.
 
-    def check_all_plants(self):
-        """checking healty of all plants in the Garden"""
-        current = self.plant_list_head
-        if current is None:
-            print("The garden is empty")
-            return
+        Args:
+            plant_name:   Name of the plant to check
 
-        print("\n" + "=" * 30)
-        print("Garden Status")
-        print("=" * 30 + "\n")
+        Returns:
+            str: Health status message
 
-        current = self.plant_list_head
-        counter = 0
-        while current is not None:
-            if current.plant_alive is False:
-                print(f"{current.plant_name} is Dead!!!")
-                counter += 1
-            if current.water_requirements > current.water_level:
-                print(f"{current.plant_name} is low on water!")
-                counter += 1
-            if current.plant_alive is True and \
-               current.water_level >= current.water_requirements:
-                print(f"{current.plant_name} is healthy.")
-            current = current.next
+        Raises:
+            PlantError: If plant doesn't exist or has invalid parameters
+        """
+        # Check if plant exists
+        if plant_name not in self.plants:
+            raise PlantError(f"Plant '{plant_name}' not found in garden")
 
-    def simulate_day(self):
-        """Is simulating a Day in the Garden"""
-        print("\n⏰ One day past...")
-        current = self.plant_list_head
-        while current is not None:
-            if current.plant_alive is False:
-                current = current.next
-                continue
-            if current.water_level <= 0:
-                current.plant_alive = False
-                print(f"💀 Plant '{current.plant_name}' has died due to "
-                      f"lack of water!")
-            if current.water_requirements > current.water_level:
-                current.water_level - 1
-                current.plant_alive = False
-                print(f"💀 Plant '{current.plant_name}' has died due to too "
-                      f"little water!")
-            current.water_level - 1
-            current = current.next
-        print("New Day Started check the plant status")
+        plant = self.plants[plant_name]
 
-    def get_plant_statistics(self):
-        print("\n" + "=" * 30)
-        print("The statistics of the Garden are")
-        print("=" * 30 + "\n")
-        current = self.plant_list_head
-        dead_plants = 0
-        plants_alive = 0
-        healty_plants = 0
-        unhealthy_plants = 0
-        while current is not None:
-            if current.plant_alive is False:
-                dead_plants += 1
-            elif current.water_level < current.water_requirements:
-                print(f"{current.plant_name} is low on water")
-                unhealthy_plants += 1
-                plants_alive += 1
-            plants_alive += 1
-            healty_plants += 1
-            current = current.next
-        plants_alive = plants_alive - dead_plants
-        unhealthy_plants = unhealthy_plants + dead_plants
-        healty_plants = healty_plants - unhealthy_plants
-        if plants_alive == 0:
-            healty_plants = 0
-        print(f"Total plants alive: {plants_alive}")
-        print(f"Total dead plants: {dead_plants}")
-        print(f"Healty plants: {healty_plants}")
-        print(f"Unhealty plants: {unhealthy_plants}")
+        # Validate water level
+        if plant["water_level"] > 10:
+            raise PlantError(f"Water level {plant['water_level']} is "
+                             f"too high (max 10)")
 
-# ==================== Test Function ========================
+        # Validate sunlight hours
+        if plant["sunlight_hours"] < 2 or plant["sunlight_hours"] > 12:
+            raise PlantError(f"Sunlight hours {plant['sunlight_hours']} "
+                             f"out of range")
+
+        # Return health status
+        return (
+            f"{plant_name}: healthy "
+            f"(water: {plant['water_level']}, "
+            f"sun: {plant['sunlight_hours']})"
+        )
+
+
+# ============================================
+# TEST FUNCTION
+# ============================================
 
 
 def test_garden_management():
-    """testing the Garden management system"""
-    print("=" * 30)
-    print("GARDEN MANAGEMENT SYSTEM _ DEMO")
-    print("=" * 30)
+    """Test the garden management system with all error handling."""
+    print("=== Garden Management System ===")
 
+    # Create garden manager
     garden = GardenManager()
 
-# ========== Test 1 valid numbers =========
-    print("\n ==== Test 1:  ====")
+    # ========================================
+    # TEST 1: Adding Plants
+    # ========================================
+    print("Adding plants to garden...")
 
-    garden.add_plant_to_list("Tomato", 3)
-    garden.add_plant_to_list("Rose", 5)
-    garden.add_plant_to_list("Sunflower", 5)
-    garden.add_plant_to_list("Potato", 4)
-    garden.add_plant_to_list("Oak Tree", 7)
-    garden.add_plant_to_list("Cucumber", 5)
-    garden.get_plant_statistics()
-    garden.check_all_plants()
-    garden.water_plant(2)
-    garden.simulate_day()
-    garden.simulate_day()
-    garden.simulate_day()
-    garden.simulate_day()
-    garden.simulate_day()
-    garden.simulate_day()
-    garden.get_plant_statistics()
-    garden.water_plant(50)
-    garden.check_all_plants()
-    garden.get_plant_statistics()
-    print("Garden simulation is over")
+    # Add valid plants
+    try:
+        garden.add_plant("tomato", 5, 8)
+        print("Added tomato successfully")
+    except PlantError as e:
+        print(f"Error adding plant: {e. message}")
 
-# =========== Test 2 unvalid input ===============
+    try:
+        garden.add_plant("lettuce", 6, 7)
+        print("Added lettuce successfully")
+    except PlantError as e:
+        print(f"Error adding plant: {e. message}")
+
+    # Add invalid plant (empty name)
+    try:
+        garden.add_plant("", 5, 8)
+        print("Added plant successfully")
+    except PlantError as e:
+        print(f"Error adding plant: {e.message}")
+
+    # ========================================
+    # TEST 2: Watering Plants (with finally)
+    # ========================================
+    print("Watering plants...")
+    try:
+        garden.water_plants()
+    except WaterError as e:
+        print(f"Error watering:  {e.message}")
+
+    # ========================================
+    # TEST 3: Checking Plant Health
+    # ========================================
+    print("Checking plant health...")
+
+    # Check valid plant
+    try:
+        status = garden.check_plant_health("tomato")
+        print(status)
+    except PlantError as e:
+        print(f"Error checking tomato: {e.message}")
+
+    # Check plant with invalid water level (simulate)
+    garden.plants["lettuce"]["water_level"] = 15
+    try:
+        status = garden.check_plant_health("lettuce")
+        print(status)
+    except PlantError as e:
+        print(f"Error checking lettuce: {e. message}")
+
+    # ========================================
+    # TEST 4: Error Recovery
+    # ========================================
+    print("Testing error recovery...")
+
+    # Simulate low water tank
+    garden.water_tank_level = 5
+
+    try:
+        garden.water_plants()
+    except GardenError as e:
+        # Caught general GardenError (WaterError is subclass)
+        print(f"Caught GardenError: {e. message}")
+
+    # System continues working
+    print("System recovered and continuing...")
+
+    print("Garden management system test complete!")
 
 
-def test_garden_management_case_2():
-    print("\n ==== Test 2:  ====")
-    plot = GardenManager()
-    plot.add_plant_to_list("Tomato", 2)
-    plot.add_plant_to_list("Rose", 5)
-    plot.add_plant_to_list("Sunflower", 3)
-    plot.add_plant_to_list("Potato", 4)
-    plot.add_plant_to_list("Oak Tree", 7)
-    plot.add_plant_to_list("Cucumber", -1)
-    plot.water_plant(-3)
-    plot.add_plant_to_list(None, 9)
-    plot.simulate_day()
-    plot.simulate_day()
-    plot.simulate_day()
-    plot.simulate_day()
-    plot.simulate_day()
-    plot.simulate_day()
-    plot.simulate_day()
-    plot.simulate_day()
-    plot.simulate_day()
-    plot.check_all_plants()
-    plot.get_plant_statistics()
-    plot.water_plant(2)
-    print("Garden simulation is over")
+# ============================================
+# MAIN FUNCTION
+# ============================================
 
 
-test_garden_management()
+def main():
+    """Run the garden management system test."""
+    test_garden_management()
+
+
+if __name__ == "__main__":
+    main()

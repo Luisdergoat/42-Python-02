@@ -1,118 +1,105 @@
-def garden_operations():
-    """A funktion to check diffrent Error types"""
+"""
+Garden Error Types Demonstration.
 
-    def calculate_plants_per_row(total_plants, rows):
-        """Tests for ZeroDivisionError and TypeError"""
-        total = int(total_plants)
-        return total / rows
+Demonstrates:
+- ValueError: Invalid data conversion
+- ZeroDivisionError: Division by zero
+- FileNotFoundError: Missing file access
+- KeyError: Missing dictionary key
+- Multiple error type handling
+"""
 
-    def read_garden_plant(filename):
-        """Tests for FileNotFoundError"""
-        with open(filename, 'r') as file:
-            return file. read()
 
-    def get_plant_info(plant_name, plant_database):
-        """Tests for KeyError"""
-        return plant_database[plant_name]
+def garden_operations(operation_type, value=None):
+    """
+    Perform garden operations that may raise different errors.
 
-    return calculate_plants_per_row, read_garden_plant, get_plant_info
+    Args:
+        operation_type:  Type of operation to perform
+        value:  Optional value for the operation
+
+    Raises:
+        ValueError: When invalid data is provided
+        ZeroDivisionError: When dividing by zero
+        FileNotFoundError: When file doesn't exist
+        KeyError: When key is not in dictionary
+    """
+    # Garden inventory
+    plants = {"roses": 10, "tulips": 5, "sunflowers": 8}
+
+    if operation_type == "parse_number":
+        # ValueError:  Trying to convert invalid string to int
+        return int(value)
+
+    elif operation_type == "divide_harvest":
+        # ZeroDivisionError: Division by zero
+        total_harvest = 100
+        return total_harvest / value
+
+    elif operation_type == "read_file":
+        # FileNotFoundError: File doesn't exist
+        with open(value, "r") as f:
+            return f.read()
+
+    elif operation_type == "get_plant":
+        # KeyError: Key doesn't exist in dictionary
+        return plants[value]
 
 
 def test_error_types():
-    """Tests diffrent Error types in garden operations"""
-    print("=" * 30)
-    print("Garden Error Types Demo")
-    print("=" * 30)
+    """Test different error types and demonstrate error handling."""
+    print("=== Garden Error Types Demo ===")
 
-    # Function calls
-    calc_plants, read_plants, get_info = garden_operations()
-
-    # Testing Database for KeyError
-    plant_db = {"Rose": "A red flower", "Tulip": "A spring flower"}
-
-    # First test - ValueError
-    print("\n=== Test 1: ValueError ===")
+    # Test 1: ValueError
+    print("Testing ValueError...")
     try:
-        result = calc_plants("abc", 5)
-        print(f"Plants per row: {result}")
+        garden_operations("parse_number", "abc")
     except ValueError:
-        print("Error: ValueError - Not a valid number!")
-    print("Program running... \n")
+        print("Caught ValueError: invalid literal for int()")
 
-    # Test 2 ZeroDivisionError
-    print("=== Test 2: ZeroDivisionerror ===")
+    # Test 2: ZeroDivisionError
+    print("Testing ZeroDivisionError...")
     try:
-        result = calc_plants("100", 0)
-        print(f"Plants per row: {result}")
+        garden_operations("divide_harvest", 0)
     except ZeroDivisionError:
-        print("Error: ZeroDivisionError - you can't divide with 0")
-    print("Program running... \n")
+        print("Caught ZeroDivisionError: division by zero")
 
-    # Test 3 FileNotFoundError
-    print("=== Test 3: FileNotfoundError")
+    # Test 3: FileNotFoundError
+    print("Testing FileNotFoundError...")
     try:
-        content = read_plants("gardenplan.txt")
-        print(f"Gardenplan: {content}")
+        garden_operations("read_file", "missing.txt")
     except FileNotFoundError:
-        print("Error: FileNotFoundError - Didn't find the file!")
-    print("Program running... \n")
+        print("Caught FileNotFoundError:  No such file 'missing.txt'")
 
-    # Test 4 KeyError
-    print("=== Test 4 KeyError ===")
+    # Test 4: KeyError
+    print("Testing KeyError...")
     try:
-        info = get_info("Cucumber", plant_db)
-        print(f"Plant-Info: {info}")
+        garden_operations("get_plant", "missing_plant")
     except KeyError:
-        print("Error: KeyError - Plant is not in database")
-    print("Program running.. \n")
+        print("Caught KeyError: 'missing_plant'")
 
-    # Test 5 multiple Errors
-    print("=== Test 5 multiple Errors ===")
+    # Test 5: Multiple errors with one except block
+    print("Testing multiple errors together...")
+    test_cases = [
+        ("parse_number", "xyz"),
+        ("divide_harvest", 0),
+        ("get_plant", "invalid_plant"),
+    ]
 
-    test_cases = [("abc", 0, "ValueError Test")]
-
-    for plants, rows, description in test_cases:
+    for operation, value in test_cases:
         try:
-            result = calc_plants(plants, rows)
-            print(f"{description}: {plants} plants / "
-                  f"{rows} rows = {result:.1f} Plants per row")
-        except (ValueError, ZeroDivisionError):
-            print("Multiple Error encountert!")
-    print("Program running... \n")
+            garden_operations(operation, value)
+        except (ValueError, ZeroDivisionError, KeyError):
+            print("Caught an error, but program continues!")
+            break
+
+    print("All error types tested successfully!")
 
 
-def interactive_tests():
-    """Testing cases with user input"""
-    plant_db = {"Rose": "A red flower", "Tulip": "A spring flower"}
-    print("=" * 30)
-    print("Interactive Test Start")
-    print("=" * 30)
-    while True:
-        try:
-            # taking user input
-            run = input("Do you want to start or quit?")
-            plantss = input("How many plants do you have:")
-            if run.lower() == quit:
-                break
-            rows = input("How many rows:")
+def main():
+    """Run the error types demonstration."""
+    test_error_types()
 
-            # Calculation
-            total = int(plantss)
-            num_rows = int(rows)
-            result = total / num_rows
 
-            print(f"You need {result:.1f} Plants per row")
-
-            # Plant-Info
-            plant_name = input("\nWhat Plant? ")
-            info = plant_db[plant_name]
-            print(f"{plant_name}: Info: {info}")
-        except ValueError:
-            print("Number is not valid")
-        except ZeroDivisionError:
-            print("Can't divide with Zero")
-        except KeyError:
-            print("Plant not found in Database")
-        except Exception as e:
-            print(f"Unknown Error: {e}!!!")
-    print("\nAll tests Complete!")
+if __name__ == "__main__":
+    main()
